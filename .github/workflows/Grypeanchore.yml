@@ -1,0 +1,39 @@
+name: Task 5 - SBOM + Grype Scan
+
+on:
+  push:
+    branches: ["master"]
+
+jobs:
+  sbom:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate SBOM using Syft Action
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: dvja-sbom.json
+
+      - name: Scan SBOM with Grype
+        uses: anchore/scan-action@v3
+        with:
+          sbom: dvja-sbom.json
+          output-format: table
+          output-file: grype-report.txt
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dvja-sbom
+          path: dvja-sbom.json
+
+      - name: Upload Grype report
+        uses: actions/upload-artifact@v4
+        with:
+          name: grype-report
+          path: grype-report.txt
